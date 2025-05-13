@@ -1,0 +1,21 @@
+import { Router } from 'express';
+import controllerMapper from '../controller/scrapperController/controllerMapper.js';
+
+const router = Router();
+
+class ScrapperRoutes {
+    constructor() {
+        this.router = Router();
+        this.initializeRoutes();
+    }
+
+    initializeRoutes() {
+        this.router.get('/scrapper/eservices/:cnrNumber', controllerMapper.eservices.getCaseData);
+    }
+
+    getRouter() {
+        return this.router;
+    }
+}
+
+export default new ScrapperRoutes().getRouter();

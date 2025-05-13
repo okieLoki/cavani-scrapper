@@ -1,0 +1,18 @@
+import express from 'express';
+import constants from './util/constants/constants.js';
+import logger from './util/logger/logger.js';
+import errorHandler from './util/error-handler/errorHandler.js';
+import scrapperRoutes from './routes/scrapperRoutes.js';
+
+
+const app = express();
+
+app.use(express.json());
+
+app.use(errorHandler);
+
+app.use(scrapperRoutes);
+
+app.listen(constants.PORT, () => {
+    logger.info(`Server is running on port ${constants.PORT}`);
+});
