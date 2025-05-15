@@ -3,17 +3,32 @@ import sharp from 'sharp';
 import logger from '../../util/logger/logger.js';
 
 class CaptchaSolverService {
+    // async preprocessCaptcha(inputPath, outputPath) {
+    //     try {
+    //         await sharp(inputPath)
+    //             .grayscale()
+    //             .resize(300, 100, { fit: 'fill' })
+    //             .normalize()
+    //             .sharpen()
+    //             .threshold(150)
+    //             .toFile(outputPath);
+    //     } catch (error) {
+    //         logger.error('Error preprocessing captcha:', error);
+    //         throw error;
+    //     }
+    // }
+
     async preprocessCaptcha(inputPath, outputPath) {
         try {
-            await sharp(inputPath)
+            const imageBuffer = await sharp(inputPath)
                 .grayscale()
-                .resize(300, 100, { fit: 'fill' })
-                .normalize()
-                .sharpen()
+                .negate() // Invert like ImageOps.invert
                 .threshold(150)
-                .toFile(outputPath);
+                .toBuffer();
+
+            await sharp(imageBuffer).toFile(outputPath);
         } catch (error) {
-            logger.error('Error preprocessing captcha:', error);
+            logger.error('Error during preprocessing:', error);
             throw error;
         }
     }

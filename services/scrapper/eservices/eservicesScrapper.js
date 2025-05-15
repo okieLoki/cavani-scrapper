@@ -8,7 +8,7 @@ import fs from "fs-extra";
 class EservicesScrapper {
     constructor() {
         this.baseUrl = 'https://services.ecourts.gov.in/ecourtindia_v6/';
-        this.maxRetries = 1;
+        this.maxRetries = 3;
         this.imagesDir = path.join(process.cwd(), 'images');
     }
 
@@ -141,6 +141,7 @@ class EservicesScrapper {
                     defaultViewport: null,
                     ignoreHTTPSErrors: true
                 });
+
                 const page = await browser.newPage();
                 
                 logger.info(`Attempt ${attempt + 1} of ${this.maxRetries} for CNR: ${cnrNumber}`);
