@@ -232,7 +232,7 @@ class PhhcScrapper {
                         logger.error('Error closing browser:', closeError);
                     }
                 }
-                await this.cleanupImages();
+                // await this.cleanupImages();
 
                 if (attempt === this.maxRetries - 1) {
                     throw Error('Failed to fetch case data after max retries');
