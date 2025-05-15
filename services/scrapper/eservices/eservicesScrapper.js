@@ -8,7 +8,7 @@ import fs from "fs-extra";
 class EservicesScrapper {
     constructor() {
         this.baseUrl = 'https://services.ecourts.gov.in/ecourtindia_v6/';
-        this.maxRetries = 3;
+        this.maxRetries = 1;
         this.imagesDir = path.join(process.cwd(), 'images');
     }
 
@@ -129,7 +129,7 @@ class EservicesScrapper {
             try {
                 await this.ensureImagesDirectory();
                 browser = await puppeteer.launch({
-                    headless: true,
+                    headless: false,
                     args: [
                         '--no-sandbox',
                         '--disable-setuid-sandbox',
@@ -149,13 +149,20 @@ class EservicesScrapper {
                     await page.goto(this.baseUrl, { waitUntil: 'networkidle2' });
                     await page.waitForSelector('#captcha_image');
 
+
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    const imageName = Math.random().toString(36).substring(2, 15) + '_' + Date.now() + '.png';
+
                     const captchaElement = await page.$('#captcha_image');
-                    const rawImagePath = path.join(this.imagesDir, `captcha_raw_${attempt}.png`);
-                    const processedImagePath = path.join(this.imagesDir, `captcha_processed_${attempt}.png`);
+                    const rawImagePath = path.join(this.imagesDir, `captcha_raw_${imageName}.png`);
+                    const processedImagePath = path.join(this.imagesDir, `captcha_processed_${imageName}.png`);
 
                     await captchaElement.screenshot({ path: rawImagePath });
                     await captchaSolverService.preprocessCaptcha(rawImagePath, processedImagePath);
                     const captchaText = await captchaSolverService.solveCaptcha(processedImagePath);
+
+                    console.log(captchaText)
 
                     await fs.remove(rawImagePath);
                     await fs.remove(processedImagePath);
@@ -163,6 +170,7 @@ class EservicesScrapper {
                     await page.type('#cino', cnrNumber);
                     await page.type('#fcaptcha_code', captchaText);
                     await page.click('#searchbtn');
+
 
                     await page.waitForSelector('#history_cnr', { timeout: 30000 });
                     await page.waitForFunction(() => {

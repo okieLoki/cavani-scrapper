@@ -17,6 +17,8 @@
     "express": "^5.1.0",
     "fs-extra": "^11.3.0",
     "http-errors": "^2.0.0",
+    "opencv4nodejs": "^5.6.0",
+    "opencv4nodejs-prebuilt": "^5.3.4",
     "pino": "^9.6.0",
     "puppeteer": "^24.8.2",
     "puppeteer-extra": "^3.3.6",
