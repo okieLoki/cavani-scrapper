@@ -7,26 +7,8 @@ class PhhcScrapper {
     constructor() {
         this.baseUrl = 'https://phhc.gov.in';
         this.maxRetries = 1;
-        this.imagesDir = path.join(process.cwd(), 'images');
     }
 
-    async ensureImagesDirectory() {
-        try {
-            await fs.ensureDir(this.imagesDir);
-        } catch (error) {
-            logger.error('Error creating images directory:', error);
-            throw Error('Error creating images directory');
-        }
-    }
-
-    async cleanupImages() {
-        try {
-            await fs.emptyDir(this.imagesDir);
-        } catch (error) {
-            logger.error('Error cleaning up images directory:', error);
-            throw Error('Error cleaning up images directory');
-        }
-    }
 
     async extractCaseDetails(page) {
         try {
@@ -182,7 +164,6 @@ class PhhcScrapper {
 
         while (attempt < this.maxRetries) {
             try {
-                await this.ensureImagesDirectory();
 
                 // browser = await puppeteer.launch({
                 //     headless: false,
@@ -239,7 +220,6 @@ class PhhcScrapper {
                 const caseDetails = await this.extractCaseDetails(page);
 
                 await browser.close();
-                await this.cleanupImages();
 
                 return caseDetails;
 
