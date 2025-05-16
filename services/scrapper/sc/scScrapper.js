@@ -8,138 +8,8 @@ import {setTimeout} from "node:timers/promises";
 class ScScrapper {
     constructor() {
         this.baseUrl = 'https://www.sci.gov.in';
-        this.maxRetries = 1;
+        this.maxRetries = 2;
     }
-
-    // async extractCaseDetails(page) {
-    //     try {
-    //         return await page.evaluate(() => {
-    //             // const getText = (el) => (el ? el.textContent.trim() : '');
-    //             // const table = document.querySelector('#table1');
-    //             // if (!table) return { error: 'Main case details table not found' };
-    //             //
-    //             // const rows = Array.from(table.querySelectorAll('tr'));
-    //             //
-    //             // const caseDetails = {};
-    //             // const relatedCases = [];
-    //             // const caseListing = [];
-    //             // const copyPetitions = [];
-    //             // const appeals = [];
-    //             // const judgments = [];
-    //             //
-    //             // let currentSection = null;
-    //             //
-    //             // for (let i = 0; i < rows.length; i++) {
-    //             //     const row = rows[i];
-    //             //     const cells = row.querySelectorAll('td');
-    //             //
-    //             //     if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
-    //             //         const sectionText = getText(cells[0]);
-    //             //
-    //             //         if (sectionText.includes('Related Cases')) currentSection = 'relatedCases';
-    //             //         else if (sectionText.includes('Case Listing Details')) currentSection = 'caseListing';
-    //             //         else if (sectionText.includes('Copy Petition Applied')) currentSection = 'copyPetitions';
-    //             //         else if (sectionText.includes('Detail of Appeals')) currentSection = 'appeals';
-    //             //         else if (sectionText.includes('Judgment Details')) currentSection = 'judgments';
-    //             //         else currentSection = null;
-    //             //
-    //             //         continue;
-    //             //     }
-    //             //
-    //             //     if (currentSection === 'relatedCases' && cells.length >= 2) {
-    //             //         relatedCases.push({
-    //             //             caseNo: getText(cells[0]),
-    //             //             link: cells[0].querySelector('a')?.href || null,
-    //             //             description: getText(cells[1]),
-    //             //         });
-    //             //     } else if (currentSection === 'caseListing' && cells.length >= 3) {
-    //             //         caseListing.push({
-    //             //             causeListDate: getText(cells[0]),
-    //             //             listTypeSrNo: getText(cells[1]),
-    //             //             bench: getText(cells[2]),
-    //             //         });
-    //             //     } else if (currentSection === 'copyPetitions' && cells.length >= 4) {
-    //             //         copyPetitions.push({
-    //             //             petitionTypeNo: getText(cells[0]),
-    //             //             petitionDate: getText(cells[1]),
-    //             //             appliedBy: getText(cells[2]),
-    //             //             petitionStatus: getText(cells[3]),
-    //             //         });
-    //             //     } else if (currentSection === 'appeals' && cells.length >= 4) {
-    //             //         appeals.push({
-    //             //             caseId: getText(cells[0]),
-    //             //             partyName: getText(cells[1]),
-    //             //             status: getText(cells[2]),
-    //             //             detailLink: cells[3].querySelector('a')?.href || null,
-    //             //         });
-    //             //     } else if (currentSection === 'judgments' && cells.length >= 4) {
-    //             //         judgments.push({
-    //             //             orderDate: getText(cells[0]),
-    //             //             orderCaseId: getText(cells[1]),
-    //             //             bench: getText(cells[2]),
-    //             //             judgmentLink: cells[3].querySelector('a')?.href || null,
-    //             //         });
-    //             //     } else if (cells.length === 4) {
-    //             //         const label = getText(cells[0]);
-    //             //         switch (label) {
-    //             //             case 'Diary Number':
-    //             //                 caseDetails.diaryNumber = getText(cells[1]);
-    //             //                 caseDetails.registrationDate = getText(cells[3]);
-    //             //                 break;
-    //             //             case 'Category':
-    //             //                 caseDetails.category = getText(cells[1]);
-    //             //                 caseDetails.mainCaseDetail = getText(cells[3]);
-    //             //                 break;
-    //             //             case 'Party Detail':
-    //             //                 caseDetails.partyDetail = getText(cells[1]);
-    //             //                 caseDetails.district = getText(cells[3]);
-    //             //                 break;
-    //             //             case 'Advocate Name':
-    //             //                 caseDetails.advocateName = getText(cells[1]);
-    //             //                 caseDetails.listType = getText(cells[3]);
-    //             //                 break;
-    //             //             case 'Status':
-    //             //                 caseDetails.status =
-    //             //                     getText(cells[1]) +
-    //             //                     (cells[2] ? ' ' + getText(cells[2]) : '') +
-    //             //                     (cells[3] ? ' ' + getText(cells[3]) : '');
-    //             //                 break;
-    //             //         }
-    //             //     }
-    //             // }
-    //             //
-    //             // return {
-    //             //     caseDetails,
-    //             //     relatedCases,
-    //             //     caseListing,
-    //             //     copyPetitions,
-    //             //     appeals,
-    //             //     judgments,
-    //             // };
-    //             return {
-    //                 message:"extract case to be implemented"
-    //             }
-    //         });
-    //     } catch (error) {
-    //         logger.error('Error extracting case details:', error);
-    //         throw Error('Error extracting case details');
-    //     }
-    // }
-
-    // async extractCaseDetails(page) {
-    //     try {
-    //
-    //         await page.close();
-    //
-    //         return {
-    //             message: "extract case to be implemented"
-    //         };
-    //
-    //     } catch (error) {
-    //         console.error('Error extracting case details:', error);
-    //         throw error;
-    //     }
-    // }
 
     async extractCaseDetails(page) {
         try {
@@ -215,9 +85,9 @@ class ScScrapper {
 
     async extractEarlierCourtDetails(page) {
         try {
-            // Click the "Earlier Court Details" <button>
-            await page.waitForSelector('table.caseDetailsTable');
-            await page.click('table.caseDetailsTable")');
+
+            await page.click('text=Earlier Court Details');
+
             logger.info('clicked earlier court details');
 
             // Wait for the first row to appear after data loads
@@ -228,13 +98,14 @@ class ScScrapper {
                 const rows = document.querySelectorAll('table.bt tbody tr');
                 const result = [];
 
+
                 for (const row of rows) {
                     const getText = (selector) => {
                         const cell = row.querySelector(`td[data-th="${selector}"] span.bt-content`);
                         return cell ? cell.textContent.trim().replace(/\s+/g, ' ') : '';
                     };
 
-                    result.push({
+                    const entry = {
                         sno: getText("S.No."),
                         court: getText("Court"),
                         agencyState: getText("Agency State"),
@@ -250,7 +121,12 @@ class ScScrapper {
                         reliedUponCourt: getText("Relied Upon court / State / District / No."),
                         transferTo: getText("Transfer To State / District / No."),
                         govtNotification: getText("Government Notification State / No. /  Date")
-                    });
+                    };
+
+                    // Only include if "sno" (or any other field) is not empty
+                    if (entry.sno.trim() !== '') {
+                        result.push(entry);
+                    }
                 }
 
                 return result;
@@ -260,6 +136,136 @@ class ScScrapper {
         } catch (err) {
             console.error('Error extracting Earlier Court Details:', err);
             throw new Error('Failed to extract Earlier Court Details');
+        }
+    }
+
+    async extractTaggedMattersDetails(page) {
+        try {
+            // Ensure the "Tagged Matters" section is expanded
+
+            await page.click('text=Tagged Matters');
+            // Wait for the nested case rows to appear
+            await page.waitForSelector('td[data-th="Type"]');
+
+            // Evaluate the page to extract structured info
+            const details = await page.evaluate(() => {
+                const rows = document.querySelectorAll('table.caseDetailsTable.tagged_matters table tbody tr');
+                const result = [];
+
+                for (const row of rows) {
+                    const getText = (selector) => {
+                        const cell = row.querySelector(`td[data-th="${selector}"] span.bt-content`);
+                        return cell ? cell.textContent.trim().replace(/\s+/g, ' ') : '';
+                    };
+
+                    const entry = {
+                        type: getText("Type"),
+                        caseNumber: getText("Case Number"),
+                        petitionerVsRespondent: getText("Petitioner vs. Respondent"),
+                        list: getText("List"),
+                        status: getText("Status"),
+                        statutoryInfo: getText("Stat. Info."),
+                        ia: getText("IA"),
+                        entryDate: getText("Entry Date")
+                    };
+
+                    if (entry.caseNumber) {
+                        result.push(entry);
+                    }
+                }
+
+                return result;
+            });
+
+            return details;
+        } catch (err) {
+            console.error('Error extracting Tagged Matters details:', err);
+            throw new Error('Failed to extract Tagged Matters details');
+        }
+    }
+
+    async extractJudgementOrdersDetails(page) {
+        try {
+            // Ensure the "Judgement/Orders" section is expanded
+            await page.click('text=Judgement/Orders');
+            await page.waitForSelector('table.caseDetailsTable.judgement_orders tbody tr td a');
+
+            const orders = await page.evaluate(() => {
+                const rows = document.querySelectorAll(
+                    'table.caseDetailsTable.judgement_orders tbody tr'
+                );
+                const result = [];
+
+                for (const row of rows) {
+                    const link = row.querySelector('a');
+                    // logger.info(link);
+                    if (link) {
+                        const date = link.textContent.trim();
+                        const href = link.href;
+                        const matched = link.text.match(/\[(.*?)\]/);
+                        // const typeMatch = matched ? matched[1].trim() : "";
+                        result.push({
+                            date,
+                            link: href,
+                            // type: typeMatch || 'Unknown'
+                        });
+                    }
+                }
+
+                return result;
+            });
+
+            return orders;
+        } catch (err) {
+            console.error('Error extracting Judgement/Orders details:', err);
+            throw new Error('Failed to extract Judgement/Orders details');
+        }
+    }
+
+
+    async extractNoticesDetails(page) {
+        try {
+            // Click the Notices section if it's not already expanded
+
+            await page.locator('table.caseDetailsTable.notices > thead button').click();
+
+            // Wait for nested rows inside the Notices table
+            await page.waitForSelector('td[data-th="Name"]');
+
+            const details = await page.evaluate(() => {
+                const rows = document.querySelectorAll('table.caseDetailsTable.notices table tbody tr');
+                const result = [];
+
+                for (const row of rows) {
+                    const getText = (header) => {
+                        const cell = row.querySelector(`td[data-th="${header}"] span.bt-content`);
+                        return cell ? cell.textContent.trim().replace(/\s+/g, ' ') : '';
+                    };
+
+                    const entry = {
+                        serialNumber: getText('Serial Number'),
+                        processId: getText('Process Id'),
+                        noticeType: getText('Notice Type'),
+                        name: getText('Name'),
+                        stateDistrict: getText('State / District'),
+                        station: getText('Station'), // Note: May be blank
+                        issueDate: getText('Issue Date'),
+                        returnableDate: getText('Returnable Date'),
+                        dispatchDate: getText('Dispatch Date') // Also may be blank
+                    };
+
+                    if (entry.processId) {
+                        result.push(entry);
+                    }
+                }
+
+                return result;
+            });
+
+            return details;
+        } catch (err) {
+            console.error('Error extracting Notices details:', err);
+            throw new Error('Failed to extract Notices details');
         }
     }
 
@@ -297,6 +303,7 @@ class ScScrapper {
             try {
                 browser = await puppeteer.launch({
                     headless: false,
+                    args:['--window-size=1920x1080'],
                     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' // for macOS
                 });
 
@@ -355,11 +362,12 @@ class ScScrapper {
                 );
 
                 const captchaValue = mistralResponse.data.choices?.[0]?.message?.content?.trim();
-                console.log(`[🤖] Mistral Solved CAPTCHA: ${captchaValue}`);
+                logger.info(`[🤖] Mistral Solved CAPTCHA: ${captchaValue}`);
 
                 await page.type('input[name="siwp_captcha_value"]', captchaValue);
                 await page.click('input[name="submit"]');
-                logger.info('clicked submit');
+                // logger.info('clicked submit');
+
 
                 // await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
@@ -373,20 +381,21 @@ class ScScrapper {
                 // remove any query string
                 setTimeout(1000)
                 await page.waitForSelector('a.viewCnrDetails', { visible: true });
-                logger.info('clicked view');
+                // logger.info('clicked view');
                 await page.click('a.viewCnrDetails');
                 // setTimeout(10000);
                 // await page.waitForSelector('div.distTableContent');
                 await page.waitForSelector('div.push-right.caseStatus.p');
 
                 const caseDetails = await this.extractCaseDetails(page);
-                // const earlierCourtDetails = await this.extractEarlierCourtDetails(page);
-                // const taggedMatters = await this.extractEarlierCourtDetails(page);
-
+                const earlierCourtDetails = await this.extractEarlierCourtDetails(page);
+                const taggedMatters = await this.extractTaggedMattersDetails(page);
+                const notices = await this.extractNoticesDetails(page);
+                const judgmentOrders = await this.extractJudgementOrdersDetails(page);
 
 
                 await browser.close();
-                return {caseDetails};
+                return {caseDetails,earlierCourtDetails,taggedMatters,notices,judgmentOrders};
 
             }catch(error){
                 logger.error('Error processing case:', error);
@@ -403,7 +412,10 @@ class ScScrapper {
                 }
 
                 attempt++;
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => {
+                    setTimeout(2000);
+                    resolve()
+                });
             }
         }
     }

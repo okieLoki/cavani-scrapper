@@ -283,6 +283,7 @@ class DlhcScrapper {
 
                 browser = await puppeteer.launch({
                     headless: false,
+                    args:['--window-size=1920x1080'],
                     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' // for macOS
                 });
 
