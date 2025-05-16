@@ -15,6 +15,8 @@ class ScrapperRoutes {
         this.router.get('/scrapper/phhc/:caseType/:caseNumber/:caseYear', controllerMapper.phhc.getCaseData);
 
         this.router.get('/scrapper/dlhc/:caseType/:caseNumber/:caseYear', controllerMapper.dlhc.getCaseData);
+
+        this.router.get('/scrapper/sc/:caseType/:caseNumber/:caseYear', controllerMapper.sc.getCaseData);
     }
 
     getRouter() {
