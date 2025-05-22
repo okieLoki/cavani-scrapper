@@ -1,0 +1,136 @@
+{
+	"info": {
+		"_postman_id": "7892f248-77f3-48c9-848b-761994f7c957",
+		"name": "court scrappers",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25181434"
+	},
+	"item": [
+		{
+			"name": "dlhc",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:3002/scrapper/dlhc/CRL.A./600/2002",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3002",
+					"path": [
+						"scrapper",
+						"dlhc",
+						"CRL.A.",
+						"600",
+						"2002"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sc",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:3002/scrapper/sc/CIVIL APPEAL/9404/2013",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3002",
+					"path": [
+						"scrapper",
+						"sc",
+						"CIVIL APPEAL",
+						"9404",
+						"2013"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eservices",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:3002/scrapper/eservices/DLSE010110952024",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3002",
+					"path": [
+						"scrapper",
+						"eservices",
+						"DLSE010110952024"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "eservices2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:3002/scrapper/eservices/DLST020314162024",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3002",
+					"path": [
+						"scrapper",
+						"eservices",
+						"DLST020314162024"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "phhc",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:3002/scrapper/phhc/CWP/12206/2005",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "3002",
+					"path": [
+						"scrapper",
+						"phhc",
+						"CWP",
+						"12206",
+						"2005"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
