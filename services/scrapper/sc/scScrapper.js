@@ -86,7 +86,10 @@ class ScScrapper {
     async extractEarlierCourtDetails(page) {
         try {
 
-            await page.click('text=Earlier Court Details');
+            const button = await page.$('text=Earlier Court Details');
+            await button.evaluate(el => el.scrollIntoView());
+            await button.click();
+
 
             logger.info('clicked earlier court details');
 
@@ -143,7 +146,10 @@ class ScScrapper {
         try {
             // Ensure the "Tagged Matters" section is expanded
 
-            await page.click('text=Tagged Matters');
+
+            const button = await page.$('text=Tagged Matters');
+            await button.evaluate(el => el.scrollIntoView());
+            await button.click();
             // Wait for the nested case rows to appear
             await page.waitForSelector('td[data-th="Type"]');
 
@@ -187,7 +193,10 @@ class ScScrapper {
     async extractJudgementOrdersDetails(page) {
         try {
             // Ensure the "Judgement/Orders" section is expanded
-            await page.click('text=Judgement/Orders');
+
+            const button = await page.$('text=Judgement/Orders');
+            await button.evaluate(el => el.scrollIntoView());
+            await button.click();
             await page.waitForSelector('table.caseDetailsTable.judgement_orders tbody tr td a');
 
             const orders = await page.evaluate(() => {
@@ -227,7 +236,14 @@ class ScScrapper {
         try {
             // Click the Notices section if it's not already expanded
 
-            await page.locator('table.caseDetailsTable.notices > thead button').click();
+            const button = await page.$('table.caseDetailsTable.notices > thead button');
+            if (button) {
+                await button.evaluate(el => el.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+                await button.click();
+            } else {
+                throw new Error('Button not found!');
+            }
+
 
             // Wait for nested rows inside the Notices table
             await page.waitForSelector('td[data-th="Name"]');
@@ -301,10 +317,23 @@ class ScScrapper {
 
         while (attempt < this.maxRetries) {
             try {
+                // browser = await puppeteer.launch({
+                //     headless: false,
+                //     args:['--window-size=1920x1080'],
+                //     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' // for macOS
+                // });
                 browser = await puppeteer.launch({
                     headless: false,
-                    args:['--window-size=1920x1080'],
-                    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' // for macOS
+                    args: [
+                        '--no-sandbox',
+                        '--disable-setuid-sandbox',
+                        '--disable-dev-shm-usage',
+                        '--disable-accelerated-2d-canvas',
+                        '--disable-gpu',
+                        '--window-size=1920x1080'
+                    ],
+                    defaultViewport: null,
+                    ignoreHTTPSErrors: true
                 });
 
                 const page = await browser.newPage();
@@ -313,7 +342,10 @@ class ScScrapper {
                 // await setTimeout(1000);
 
 
-
+                await page.waitForSelector('a.captcha-refresh-btn');
+                await page.locator('a.captcha-refresh-btn').click();
+                await setTimeout(1000);
+                logger.info('clicked captcha refresh');
 
 
                 // await page.select('#case_type', caseType);
