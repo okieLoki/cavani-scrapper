@@ -2,6 +2,8 @@ import puppeteer from "puppeteer";
 import path from "path";
 import logger from "../../../util/logger/logger.js";
 import fs from "fs-extra";
+import os from "os";
+import scrapperResponseMapper from "../mappers/scrapperResponseMapper.js";
 
 class PhhcScrapper {
     constructor() {
@@ -164,26 +166,28 @@ class PhhcScrapper {
 
         while (attempt < this.maxRetries) {
             try {
-
-                // browser = await puppeteer.launch({
-                //     headless: false,
-                //     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' // for macOS
-                // });
-
-                browser = await puppeteer.launch({
-                    headless: false,
-                    args: [
-                        '--no-sandbox',
-                        '--disable-setuid-sandbox',
-                        '--disable-dev-shm-usage',
-                        '--disable-accelerated-2d-canvas',
-                        '--disable-gpu',
-                        '--window-size=1920x1080'
-                    ],
-                    defaultViewport: null,
-                    ignoreHTTPSErrors: true
-                });
-
+                if (os.platform() === "darwin") {
+                    browser = await puppeteer.launch({
+                      headless: false,
+                      args: ["--window-size=1920x1080"],
+                      executablePath:
+                        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", // for macOS
+                    });
+                  } else {
+                    browser = await puppeteer.launch({
+                      headless: false,
+                      args: [
+                        "--no-sandbox",
+                        "--disable-setuid-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--disable-accelerated-2d-canvas",
+                        "--disable-gpu",
+                        "--window-size=1920x1080",
+                      ],
+                      defaultViewport: null,
+                      ignoreHTTPSErrors: true,
+                    });
+                  }
 
                 const page = await browser.newPage();
                 logger.info(`Attempt ${attempt + 1} of ${this.maxRetries} for Case: ${caseType}-${caseNumber}-${caseYear}`);
@@ -217,11 +221,11 @@ class PhhcScrapper {
                     throw new Error("Case link not found");
                 }
 
-                const caseDetails = await this.extractCaseDetails(page);
-
+                const rawCaseDetails = await this.extractCaseDetails(page);
                 await browser.close();
 
-                return caseDetails;
+                // Map the response to standard format
+                return scrapperResponseMapper.mapPhhcResponse(rawCaseDetails);
 
             } catch (error) {
                 logger.error('Error processing case:', error);
@@ -232,10 +236,9 @@ class PhhcScrapper {
                         logger.error('Error closing browser:', closeError);
                     }
                 }
-                // await this.cleanupImages();
 
                 if (attempt === this.maxRetries - 1) {
-                    throw Error('Failed to fetch case data after max retries');
+                    return scrapperResponseMapper.getErrorResponse('PHHC', 'Failed to fetch case data after max retries');
                 }
 
                 attempt++;
