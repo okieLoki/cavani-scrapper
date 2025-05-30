@@ -293,48 +293,53 @@ class ScScrapper {
         let attempt = 0;
 
         async function selectDropdownViaKeyboard(page, formRowClass, optionText) {
-            // Locate the container (e.g., form-row.case_type or form-row.case_year)
-            const containerHandle = await page.$(`div.form-row.${formRowClass}`);
-            if (!containerHandle) throw new Error(`Dropdown with class '${formRowClass}' not found.`);
+            try {
 
-            // Find and click the select2 dropdown inside it
-            const dropdownHandle = await containerHandle.$('.select2-selection__arrow');
-            await dropdownHandle.click();
-
-            // Wait for the search input inside the Select2 dropdown to appear
-            await page.waitForSelector('input.select2-search__field');
-
-            // Type the desired text
-            await page.type('input.select2-search__field', optionText);
-
-            // Wait a bit to allow options to populate
-            // await page.waitForTimeout(500); // adjust if needed
-
-            // Press Enter to select the top matching result
-            await page.keyboard.press('Enter');
+                await page.waitForSelector(`.form-row.${formRowClass} .select2-container`);
+                
+                await page.click(`.form-row.${formRowClass} .select2-selection`);
+                
+                await page.waitForSelector('input.select2-search__field');
+                
+                await page.evaluate(() => {
+                    document.querySelector('input.select2-search__field').value = '';
+                });
+                await page.type('input.select2-search__field', optionText);
+                
+                await page.waitForSelector('.select2-results__option');
+                
+                await setTimeout(500);
+                
+                await page.click('.select2-results__option');
+                
+                await setTimeout(500);
+            } catch (error) {
+                console.error(`Error selecting ${formRowClass} dropdown:`, error);
+                throw error;
+            }
         }
 
 
         while (attempt < this.maxRetries) {
             try {
-                // browser = await puppeteer.launch({
-                //     headless: false,
-                //     args:['--window-size=1920x1080'],
-                //     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' // for macOS
-                // });
                 browser = await puppeteer.launch({
                     headless: false,
-                    args: [
-                        '--no-sandbox',
-                        '--disable-setuid-sandbox',
-                        '--disable-dev-shm-usage',
-                        '--disable-accelerated-2d-canvas',
-                        '--disable-gpu',
-                        '--window-size=1920x1080'
-                    ],
-                    defaultViewport: null,
-                    ignoreHTTPSErrors: true
+                    args:['--window-size=1920x1080'],
+                    executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' // for macOS
                 });
+                // browser = await puppeteer.launch({
+                //     headless: false,
+                //     args: [
+                //         '--no-sandbox',
+                //         '--disable-setuid-sandbox',
+                //         '--disable-dev-shm-usage',
+                //         '--disable-accelerated-2d-canvas',
+                //         '--disable-gpu',
+                //         '--window-size=1920x1080'
+                //     ],
+                //     defaultViewport: null,
+                //     ignoreHTTPSErrors: true
+                // });
 
                 const page = await browser.newPage();
                 logger.info(`Attempt ${attempt + 1} of ${this.maxRetries} for Case: ${caseType}-${caseNumber}-${caseYear}`);
@@ -397,7 +402,13 @@ class ScScrapper {
                 logger.info(`[🤖] Mistral Solved CAPTCHA: ${captchaValue}`);
 
                 await page.type('input[name="siwp_captcha_value"]', captchaValue);
-                await page.click('input[name="submit"]');
+                
+                // Use a more specific selector for the search form's submit button
+                const submitButton = await page.waitForSelector('form#sciapi-services-case-status-case-no input[type="submit"][name="submit"]');
+                await submitButton.click();
+
+                // Wait for navigation or view link
+                await page.waitForSelector('a.viewCnrDetails', { visible: true });
                 // logger.info('clicked submit');
 
 

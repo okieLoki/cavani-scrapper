@@ -11,271 +11,6 @@ class DlhcScrapper {
         this.maxRetries = 1;
     }
 
-
-    // async extractCaseDetails(page) {
-    //     try {
-    //         return await page.evaluate(() => {
-    //             const getText = (el) => (el ? el.textContent.trim() : '');
-    //
-    //             // Find the main table - assuming #table1 is the main table as per your HTML
-    //             const table = document.querySelector('#table1');
-    //             if (!table) {
-    //                 return { error: 'Main case details table not found' };
-    //             }
-    //
-    //             const rows = Array.from(table.querySelectorAll('tr'));
-    //
-    //             const caseDetails = {};
-    //             const relatedCases = [];
-    //             const caseListing = [];
-    //             const copyPetitions = [];
-    //             const appeals = [];
-    //             const judgments = [];
-    //
-    //             for (let i = 0; i < rows.length; i++) {
-    //                 const cells = rows[i].querySelectorAll('td, th');
-    //
-    //                 if (cells.length === 4) {
-    //                     const header = getText(cells[0]);
-    //                     switch (header) {
-    //                         case 'Diary Number':
-    //                             caseDetails.diaryNumber = getText(cells[1]);
-    //                             caseDetails.registrationDate = getText(cells[3]);
-    //                             break;
-    //                         case 'Category':
-    //                             caseDetails.category = getText(cells[1]);
-    //                             caseDetails.mainCaseDetail = getText(cells[3]);
-    //                             break;
-    //                         case 'Party Detail':
-    //                             caseDetails.partyDetail = getText(cells[1]);
-    //                             caseDetails.district = getText(cells[3]);
-    //                             break;
-    //                         case 'Advocate Name':
-    //                             caseDetails.advocateName = getText(cells[1]);
-    //                             caseDetails.listType = getText(cells[3]);
-    //                             break;
-    //                         case 'Status':
-    //                             // Status row with colspan=3, concatenate all cells except header
-    //                             caseDetails.status = getText(cells[1]) + (cells[2] ? ' ' + getText(cells[2]) : '') + (cells[3] ? ' ' + getText(cells[3]) : '');
-    //                             break;
-    //                     }
-    //                 }
-    //
-    //                 // Related Cases / Miscellaneous Applications
-    //                 if (rows[i].querySelector('th') && rows[i].querySelector('th').textContent.includes('Related Cases')) {
-    //                     let j = i + 1;
-    //                     while (j < rows.length && rows[j].querySelectorAll('td').length > 0 && !rows[j].querySelector('th')) {
-    //                         const tds = rows[j].querySelectorAll('td');
-    //                         if (tds.length >= 2) {
-    //                             relatedCases.push({
-    //                                 caseNo: tds[0].innerText.trim(),
-    //                                 link: tds[0].querySelector('a')?.href || null,
-    //                                 description: tds[1].innerText.trim(),
-    //                             });
-    //                         }
-    //                         j++;
-    //                     }
-    //                 }
-    //
-    //                 // Case Listing Details
-    //                 if (rows[i].querySelector('th') && rows[i].querySelector('th').textContent.includes('Case Listing Details')) {
-    //                     let j = i + 2; // skip header + column row
-    //                     while (j < rows.length && rows[j].querySelectorAll('td').length > 0 && !rows[j].querySelector('th')) {
-    //                         const tds = rows[j].querySelectorAll('td');
-    //                         if (tds.length >= 3) {
-    //                             caseListing.push({
-    //                                 causeListDate: getText(tds[0]),
-    //                                 listTypeSrNo: getText(tds[1]),
-    //                                 bench: getText(tds[2]),
-    //                             });
-    //                         }
-    //                         j++;
-    //                     }
-    //                 }
-    //
-    //                 // Copy Petition Details
-    //                 if (rows[i].querySelector('th') && rows[i].querySelector('th').textContent.includes('Copy Petition Applied')) {
-    //                     let j = i + 2; // skip header + column row
-    //                     while (j < rows.length && rows[j].querySelectorAll('td').length > 0 && !rows[j].querySelector('th')) {
-    //                         const tds = rows[j].querySelectorAll('td');
-    //                         if (tds.length >= 4) {
-    //                             copyPetitions.push({
-    //                                 petitionTypeNo: getText(tds[0]),
-    //                                 petitionDate: getText(tds[1]),
-    //                                 appliedBy: getText(tds[2]),
-    //                                 petitionStatus: getText(tds[3]),
-    //                             });
-    //                         }
-    //                         j++;
-    //                     }
-    //                 }
-    //
-    //                 // Appeals Details
-    //                 if (rows[i].querySelector('th') && rows[i].querySelector('th').textContent.includes('Detail of Appeals')) {
-    //                     let j = i + 2;
-    //                     while (j < rows.length && rows[j].querySelectorAll('td').length > 0 && !rows[j].querySelector('th')) {
-    //                         const tds = rows[j].querySelectorAll('td');
-    //                         if (tds.length >= 4) {
-    //                             appeals.push({
-    //                                 caseId: getText(tds[0]),
-    //                                 partyName: getText(tds[1]),
-    //                                 status: getText(tds[2]),
-    //                                 detailLink: tds[3].querySelector('a')?.href || null,
-    //                             });
-    //                         }
-    //                         j++;
-    //                     }
-    //                 }
-    //
-    //                 // Judgment Details
-    //                 if (rows[i].querySelector('th') && rows[i].querySelector('th').textContent.includes('Judgment Details')) {
-    //                     let j = i + 2;
-    //                     while (j < rows.length && rows[j].querySelectorAll('td').length > 0 && !rows[j].querySelector('th')) {
-    //                         const tds = rows[j].querySelectorAll('td');
-    //                         if (tds.length >= 4) {
-    //                             judgments.push({
-    //                                 orderDate: getText(tds[0]),
-    //                                 orderCaseId: getText(tds[1]),
-    //                                 bench: getText(tds[2]),
-    //                                 judgmentLink: tds[3].querySelector('a')?.href || null,
-    //                             });
-    //                         }
-    //                         j++;
-    //                     }
-    //                 }
-    //             }
-    //
-    //             return {
-    //                 caseDetails,
-    //                 relatedCases,
-    //                 caseListing,
-    //                 copyPetitions,
-    //                 appeals,
-    //                 judgments,
-    //             };
-    //         });
-    //     } catch (error) {
-    //         logger.error('Error extracting case details:', error);
-    //         throw Error('Error extracting case details');
-    //     }
-    // }
-
-    async extractCaseDetails(page) {
-        try {
-            return await page.evaluate(() => {
-                const getText = (el) => (el ? el.textContent.trim() : '');
-                const table = document.querySelector('#table1');
-                if (!table) return { error: 'Main case details table not found' };
-
-                const rows = Array.from(table.querySelectorAll('tr'));
-
-                const caseDetails = {};
-                const relatedCases = [];
-                const caseListing = [];
-                const copyPetitions = [];
-                const appeals = [];
-                const judgments = [];
-
-                let currentSection = null;
-
-                for (let i = 0; i < rows.length; i++) {
-                    const row = rows[i];
-                    const cells = row.querySelectorAll('td');
-
-                    // Detect section headers (usually single td with colspan)
-                    if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
-                        const sectionText = getText(cells[0]);
-
-                        if (sectionText.includes('Related Cases')) currentSection = 'relatedCases';
-                        else if (sectionText.includes('Case Listing Details')) currentSection = 'caseListing';
-                        else if (sectionText.includes('Copy Petition Applied')) currentSection = 'copyPetitions';
-                        else if (sectionText.includes('Detail of Appeals')) currentSection = 'appeals';
-                        else if (sectionText.includes('Judgment Details')) currentSection = 'judgments';
-                        else currentSection = null;
-
-                        continue;
-                    }
-
-                    // Handle each section accordingly
-                    if (currentSection === 'relatedCases' && cells.length >= 2) {
-                        relatedCases.push({
-                            caseNo: getText(cells[0]),
-                            link: cells[0].querySelector('a')?.href || null,
-                            description: getText(cells[1]),
-                        });
-                    } else if (currentSection === 'caseListing' && cells.length >= 3) {
-                        caseListing.push({
-                            causeListDate: getText(cells[0]),
-                            listTypeSrNo: getText(cells[1]),
-                            bench: getText(cells[2]),
-                        });
-                    } else if (currentSection === 'copyPetitions' && cells.length >= 4) {
-                        copyPetitions.push({
-                            petitionTypeNo: getText(cells[0]),
-                            petitionDate: getText(cells[1]),
-                            appliedBy: getText(cells[2]),
-                            petitionStatus: getText(cells[3]),
-                        });
-                    } else if (currentSection === 'appeals' && cells.length >= 4) {
-                        appeals.push({
-                            caseId: getText(cells[0]),
-                            partyName: getText(cells[1]),
-                            status: getText(cells[2]),
-                            detailLink: cells[3].querySelector('a')?.href || null,
-                        });
-                    } else if (currentSection === 'judgments' && cells.length >= 4) {
-                        judgments.push({
-                            orderDate: getText(cells[0]),
-                            orderCaseId: getText(cells[1]),
-                            bench: getText(cells[2]),
-                            judgmentLink: cells[3].querySelector('a')?.href || null,
-                        });
-                    } else if (cells.length === 4) {
-                        // Basic Case Info (top of the table)
-                        const label = getText(cells[0]);
-                        switch (label) {
-                            case 'Diary Number':
-                                caseDetails.diaryNumber = getText(cells[1]);
-                                caseDetails.registrationDate = getText(cells[3]);
-                                break;
-                            case 'Category':
-                                caseDetails.category = getText(cells[1]);
-                                caseDetails.mainCaseDetail = getText(cells[3]);
-                                break;
-                            case 'Party Detail':
-                                caseDetails.partyDetail = getText(cells[1]);
-                                caseDetails.district = getText(cells[3]);
-                                break;
-                            case 'Advocate Name':
-                                caseDetails.advocateName = getText(cells[1]);
-                                caseDetails.listType = getText(cells[3]);
-                                break;
-                            case 'Status':
-                                caseDetails.status =
-                                    getText(cells[1]) +
-                                    (cells[2] ? ' ' + getText(cells[2]) : '') +
-                                    (cells[3] ? ' ' + getText(cells[3]) : '');
-                                break;
-                        }
-                    }
-                }
-
-                return {
-                    caseDetails,
-                    relatedCases,
-                    caseListing,
-                    copyPetitions,
-                    appeals,
-                    judgments,
-                };
-            });
-        } catch (error) {
-            logger.error('Error extracting case details:', error);
-            throw Error('Error extracting case details');
-        }
-    }
-
-
     async getCaseData(caseType, caseNumber, caseYear) {
         let browser;
         let attempt = 0;
@@ -284,54 +19,69 @@ class DlhcScrapper {
             try {
                 if (os.platform() === "darwin") {
                     browser = await puppeteer.launch({
-                      headless: false,
-                      args: ["--window-size=1920x1080"],
-                      executablePath:
-                        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", // for macOS
+                        headless: false,
+                        args: ["--window-size=1920x1080"],
+                        executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
                     });
-                  } else {
+                } else {
                     browser = await puppeteer.launch({
-                      headless: false,
-                      args: [
-                        "--no-sandbox",
-                        "--disable-setuid-sandbox",
-                        "--disable-dev-shm-usage",
-                        "--disable-accelerated-2d-canvas",
-                        "--disable-gpu",
-                        "--window-size=1920x1080",
-                      ],
-                      defaultViewport: null,
-                      ignoreHTTPSErrors: true,
+                        headless: false,
+                        args: [
+                            "--no-sandbox",
+                            "--disable-setuid-sandbox",
+                            "--disable-dev-shm-usage",
+                            "--disable-accelerated-2d-canvas",
+                            "--disable-gpu",
+                            "--window-size=1920x1080",
+                        ],
+                        defaultViewport: null,
+                        ignoreHTTPSErrors: true,
                     });
-                  }
+                }
 
                 const page = await browser.newPage();
                 logger.info(`Attempt ${attempt + 1} of ${this.maxRetries} for Case: ${caseType}-${caseNumber}-${caseYear}`);
 
                 await page.goto(`${this.baseUrl}/app/get-case-type-status#`, { waitUntil: 'networkidle2' });
 
-                const captchaValue = await page.evaluate(() => {
-                    const captchaSpan = document.querySelector('#captcha-code');
-                    return captchaSpan ? captchaSpan.textContent.trim() : null;
-                });
-
-                console.log(captchaValue);
-                console.log(caseType,caseNumber,caseYear);
                 await page.select('select[name="case_type"]', caseType);
                 await page.type('input[name="case_number"]', caseNumber);
                 await page.select('select[name="case_year"]', caseYear);
 
+                const captchaValue = await page.evaluate(() => {
+                    const captchaSpan = document.querySelector('#captcha-code');
+                    return captchaSpan ? captchaSpan.textContent.trim() : null;
+                });
                 await page.type('input[name="captchaInput"]', captchaValue);
 
-                await page.click('#search');
-                logger.info('clicked submit');
-                await page.waitForNavigation({ waitUntil: 'networkidle2' });
+                await Promise.all([
+                    page.click('#search'),
+                    page.waitForResponse(response => response.url().includes('get-case-type-status')),
+                ]);
 
-                const rawCaseDetails = await this.extractCaseDetails(page);
+                await page.waitForSelector('#caseTable tbody tr', { timeout: 10000 });
+
+                const ordersLink = await page.waitForSelector('a[style*="color:blue"][style*="text-decoration: underline"]:has(strong)', {
+                    timeout: 5000
+                });
+
+                if (!ordersLink) {
+                    logger.info('No orders link found');
+                    return scrapperResponseMapper.getErrorResponse('DLHC', 'No orders available');
+                }
+
+                const ordersUrl = await page.evaluate(link => link.href, ordersLink);
+
+                const ordersPage = await browser.newPage();
+                await ordersPage.goto(ordersUrl, { waitUntil: 'networkidle2' });
+
+                const ordersData = await this.extractOrdersData(ordersPage);
+                
+                await ordersPage.close();
+
                 await browser.close();
 
-                // Map the response to standard format
-                return scrapperResponseMapper.mapDlhcResponse(rawCaseDetails);
+                return scrapperResponseMapper.mapDlhcResponse(ordersData);
 
             } catch (error) {
                 logger.error('Error processing case:', error);
@@ -342,7 +92,6 @@ class DlhcScrapper {
                         logger.error('Error closing browser:', closeError);
                     }
                 }
-                await this.cleanupImages();
 
                 if (attempt === this.maxRetries - 1) {
                     return scrapperResponseMapper.getErrorResponse('DLHC', 'Failed to fetch case data after max retries');
@@ -351,6 +100,46 @@ class DlhcScrapper {
                 attempt++;
                 await new Promise(resolve => setTimeout(resolve, 2000));
             }
+        }
+    }
+
+    async extractOrdersData(page) {
+        try {
+            await page.waitForSelector('#caseTable', { timeout: 5000 });
+
+            await page.select('select[name="caseTable_length"]', '-1');
+            
+            await page.waitForFunction(() => {
+                const info = document.querySelector('#caseTable_info');
+                return info && info.textContent.includes('Showing') && 
+                       document.querySelector('#caseTable_processing').style.display === 'none';
+            }, { timeout: 10000 });
+            
+            const ordersData = await page.evaluate(() => {
+                const rows = Array.from(document.querySelectorAll('#caseTable tbody tr'));
+                return rows.map(row => {
+                    const columns = row.querySelectorAll('td');
+                    const orderLink = columns[1].querySelector('a');
+                    
+                    return {
+                        serialNo: columns[0].textContent.trim(),
+                        caseNo: columns[1].textContent.trim(),
+                        orderLink: orderLink && orderLink.href !== 'javascript:void(0)' ? orderLink.href : null,
+                        orderDate: columns[2].textContent.trim(),
+                        corrigendumLink: columns[3].textContent.trim() || null,
+                        hindiOrder: columns[4].textContent.trim() || null
+                    };
+                });
+            });
+
+            return {
+                totalOrders: ordersData.length,
+                orders: ordersData
+            };
+
+        } catch (error) {
+            logger.error('Error extracting orders data:', error);
+            throw error;
         }
     }
 }
