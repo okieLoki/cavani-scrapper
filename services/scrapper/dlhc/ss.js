@@ -69,6 +69,7 @@ class DlhcScrapper {
                     logger.info('No orders link found');
                     return scrapperResponseMapper.getErrorResponse('DLHC', 'No orders available');
                 }
+
                 const petitionerVsRespondent = await page.evaluate(() => {
                     const row = document.querySelector('#caseTable tbody tr');
                     const petitionerVsRespondentCell = row ? row.querySelector('td:nth-child(3)') : null;
@@ -81,19 +82,17 @@ class DlhcScrapper {
 
                 const { parties, listingInfo } = petitionerVsRespondent;
                 const [petitioner, respondent] = parties.split('VS.').map(text => text.trim());
+                
+                // Parse listing date and court info
+                const nextDateMatch = listingInfo.match(/NEXT DATE: (\d{2}\/\d{2}\/\d{4})/);
+                const lastDateMatch = listingInfo.match(/Last Date: (\d{2}\/\d{2}\/\d{4})/);
+                const courtNoMatch = listingInfo.match(/COURT NO:(\d+)/);
 
-                // Clean up listing info
-                const nextDateMatch = listingInfo.match(/NEXT DATE:\s*(\d{2}\/\d{2}\/\d{4})/);
-                const lastDateMatch = listingInfo.match(/Last Date:\s*(\d{2}\/\d{2}\/\d{4})/);
-                const courtMatch = listingInfo.match(/COURT NO:(\d+)/);
-
-                const cleanListingInfo = {
+                const listingDate = {
                     nextDate: nextDateMatch ? nextDateMatch[1] : null,
                     lastDate: lastDateMatch ? lastDateMatch[1] : null,
-                    courtNumber: courtMatch ? parseInt(courtMatch[1]) : null
+                    courtNo: courtNoMatch ? courtNoMatch[1] : null
                 };
-
-                console.log("DATA DATA", {parties, listingInfo}, petitioner, respondent);
 
                 const ordersUrl = await page.evaluate(link => link.href, ordersLink);
 
@@ -101,18 +100,20 @@ class DlhcScrapper {
                 await ordersPage.goto(ordersUrl, { waitUntil: 'networkidle2' });
 
                 const ordersData = await this.extractOrdersData(ordersPage);
-
-                ordersData.parties = {
-                    petitioner,
-                    respondent
-                };
-                ordersData.listingInfo = cleanListingInfo;
-
-                console.log("ordersData", JSON.stringify(ordersData, null, 2));
+                ordersData = {
+                    ...ordersData,
+                    parties: {
+                        petitioner,
+                        respondent
+                    },
+                    listingDate
+                }
                 
                 await ordersPage.close();
 
                 await browser.close();
+
+                console.log("ordersData", ordersData);
 
                 return scrapperResponseMapper.mapDlhcResponse(ordersData);
 

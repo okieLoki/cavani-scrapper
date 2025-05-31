@@ -18,6 +18,8 @@ const getCustomErrorMessage = (issue) => {
 };
 
 export const errorHandler = async (err, req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+  
   if (err instanceof ZodError) {
     const customErrors = err.issues.map(getCustomErrorMessage);
 
