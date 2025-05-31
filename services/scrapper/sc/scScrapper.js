@@ -460,6 +460,7 @@ import logger from "../../../util/logger/logger.js";
 import fs from "fs-extra";
 import axios from "axios";
 import {setTimeout} from "node:timers/promises";
+import scrapperResponseMapper from "../mappers/scrapperResponseMapper.js";
 
 class ScScrapper {
     constructor() {
@@ -947,7 +948,8 @@ class ScScrapper {
                 const judgmentOrders = await this.extractJudgementOrdersDetails(page);
 
                 await browser.close();
-                return {caseDetails, earlierCourtDetails, taggedMatters, notices, judgmentOrders};
+                const data ={caseDetails, earlierCourtDetails, taggedMatters, notices, judgmentOrders};
+                return scrapperResponseMapper.mapScResponse(data);
 
             } catch(error) {
                 logger.error('Error processing case:', error);
