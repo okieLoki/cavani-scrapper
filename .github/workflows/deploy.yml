@@ -1,33 +1,114 @@
-name: Deploy cavani-scrapper
+name: Deploy Cavani Scrapper
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup SSH
+      - name: 🚀 Start Deployment
         run: |
+          echo "========================================="
+          echo "🚀 STARTING DEPLOYMENT"
+          echo "========================================="
+          echo "Time: $(date)"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+
+      - name: 📦 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup SSH
+        run: |
+          echo "🔧 Setting up SSH connection..."
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_deploy
-          chmod 600 ~/.ssh/github_deploy
-          echo -e "Host ec2\n\tHostName ${{ secrets.HOST }}\n\tUser ${{ secrets.USERNAME }}\n\tIdentityFile ~/.ssh/github_deploy\n\tStrictHostKeyChecking no" >> ~/.ssh/config
+          
+          # Create private key file
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          
+          # Verify key was created
+          echo "✅ Private key file created"
+          ls -la ~/.ssh/deploy_key
+          
+          # Add server to known hosts to avoid prompts
+          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          
+          echo "🔌 Testing SSH connection..."
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=30 -o StrictHostKeyChecking=no \
+            ${{ secrets.USERNAME }}@${{ secrets.HOST }} \
+            'echo "✅ SSH connection successful! Server: $(hostname) - $(date)"'
 
-      - name: Sync project to EC2
+      - name: 📤 Sync Files to Server
         run: |
-          rsync -az --delete --exclude=node_modules ./ ec2:~/cavani-scrapper
+          echo "📤 Syncing files to server..."
+          
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='*.log' \
+            --exclude='.env' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/cavani-scrapper/
+          
+          echo "✅ Files synced successfully"
 
-      - name: Install deps & restart app with PM2
+      - name: 🔄 Deploy Application
         run: |
-          ssh ec2 << 'EOF'
+          echo "🔄 Installing dependencies and restarting application..."
+          
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
+            
+            set -e  # Exit on any error
+            
+            echo "📍 Current location: $(pwd)"
+            echo "📂 Changing to application directory..."
             cd ~/cavani-scrapper
-            npm install
-            pm2 start server.js --name "${{ secrets.PM2_APP_NAME }}" || pm2 restart "${{ secrets.PM2_APP_NAME }}"
+            
+            echo "📋 Application files:"
+            ls -la
+            
+            echo "📦 Installing Node.js dependencies..."
+            npm install --omit=dev
+            
+            echo "🔍 Checking if PM2 process exists..."
+            if pm2 describe "${{ secrets.PM2_APP_NAME }}" > /dev/null 2>&1; then
+              echo "🔄 Restarting existing PM2 process..."
+              pm2 restart "${{ secrets.PM2_APP_NAME }}"
+              pm2 logs "${{ secrets.PM2_APP_NAME }}" --lines 5
+            else
+              echo "▶️ Starting new PM2 process..."
+              pm2 start server.js --name "${{ secrets.PM2_APP_NAME }}"
+            fi
+            
+            echo "💾 Saving PM2 configuration..."
             pm2 save
+            
+            echo "📊 Current PM2 status:"
+            pm2 list
+            
+            echo "🎯 Application health check..."
+            sleep 3
+            pm2 show "${{ secrets.PM2_APP_NAME }}"
+            
           EOF
+
+      - name: 🎉 Deployment Summary
+        run: |
+          echo "========================================="
+          echo "🎉 DEPLOYMENT COMPLETED SUCCESSFULLY!"
+          echo "========================================="
+          echo "✅ Files synchronized"
+          echo "✅ Dependencies installed"
+          echo "✅ Application restarted with PM2"
+          echo "✅ PM2 configuration saved"
+          echo ""
+          echo "🌐 Your cavani-scrapper is now running!"
+          echo "⏰ Completed at: $(date)"
