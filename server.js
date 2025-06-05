@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(scrapperRoutes);
 
 app.get('/health', (req, res) => {
-    res.send({
+    res.json({
         status: 'OK',
         timestamp: new Date().toISOString(),
     });
