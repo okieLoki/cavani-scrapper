@@ -11,7 +11,10 @@ app.use(express.json());
 app.use(scrapperRoutes);
 
 app.get('/health', (req, res) => {
-    res.send('OK');
+    res.send({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+    });
 });
 
 // Error handler should be the last middleware
