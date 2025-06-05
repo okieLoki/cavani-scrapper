@@ -19,13 +19,13 @@ class DlhcScrapper {
             try {
                 if (os.platform() === "darwin") {
                     browser = await puppeteer.launch({
-                        headless: false,
+                        headless: true,
                         args: ["--window-size=1920x1080"],
                         executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
                     });
                 } else {
                     browser = await puppeteer.launch({
-                        headless: false,
+                        headless: true,
                         args: [
                             "--no-sandbox",
                             "--disable-setuid-sandbox",
