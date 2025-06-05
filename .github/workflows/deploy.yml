@@ -3,7 +3,6 @@ name: Deploy Cavani Scrapper
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   deploy:
