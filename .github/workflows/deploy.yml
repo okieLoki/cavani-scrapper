@@ -1,0 +1,33 @@
+name: Deploy cavani-scrapper
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/github_deploy
+          chmod 600 ~/.ssh/github_deploy
+          echo -e "Host ec2\n\tHostName ${{ secrets.HOST }}\n\tUser ${{ secrets.USERNAME }}\n\tIdentityFile ~/.ssh/github_deploy\n\tStrictHostKeyChecking no" >> ~/.ssh/config
+
+      - name: Sync project to EC2
+        run: |
+          rsync -az --delete --exclude=node_modules ./ ec2:~/cavani-scrapper
+
+      - name: Install deps & restart app with PM2
+        run: |
+          ssh ec2 << 'EOF'
+            cd ~/cavani-scrapper
+            npm install
+            pm2 start index.js --name "${{ secrets.PM2_APP_NAME }}" || pm2 restart "${{ secrets.PM2_APP_NAME }}"
+            pm2 save
+          EOF
