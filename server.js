@@ -10,6 +10,10 @@ app.use(express.json());
 
 app.use(scrapperRoutes);
 
+app.get('/health', (req, res) => {
+    res.send('OK');
+});
+
 // Error handler should be the last middleware
 app.use(errorHandler);
 
