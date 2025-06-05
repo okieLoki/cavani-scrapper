@@ -28,6 +28,6 @@ jobs:
           ssh ec2 << 'EOF'
             cd ~/cavani-scrapper
             npm install
-            pm2 start index.js --name "${{ secrets.PM2_APP_NAME }}" || pm2 restart "${{ secrets.PM2_APP_NAME }}"
+            pm2 start server.js --name "${{ secrets.PM2_APP_NAME }}" || pm2 restart "${{ secrets.PM2_APP_NAME }}"
             pm2 save
           EOF
