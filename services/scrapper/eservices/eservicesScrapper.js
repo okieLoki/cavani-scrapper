@@ -17,8 +17,12 @@ class EservicesScrapper {
     try {
       await fs.ensureDir(this.imagesDir);
     } catch (error) {
-      logger.error("Error creating images directory:", error);
-      throw Error("Error creating images directory");
+      logger.error('Failed to create images directory', {
+        error: error.message,
+        stack: error.stack,
+        directory: this.imagesDir
+      });
+      throw new Error(`Failed to create images directory: ${error.message}`);
     }
   }
 
@@ -26,8 +30,12 @@ class EservicesScrapper {
     try {
       await fs.emptyDir(this.imagesDir);
     } catch (error) {
-      logger.error("Error cleaning up images directory:", error);
-      throw Error("Error cleaning up images directory");
+      logger.error('Failed to clean up images directory', {
+        error: error.message,
+        stack: error.stack,
+        directory: this.imagesDir
+      });
+      throw new Error(`Failed to clean up images directory: ${error.message}`);
     }
   }
 
@@ -123,8 +131,12 @@ class EservicesScrapper {
         };
       });
     } catch (error) {
-      logger.error("Error extracting case details:", error);
-      throw Error("Error extracting case details: " + error);
+      logger.error('Failed to extract case details from page', {
+        error: error.message,
+        stack: error.stack,
+        pageUrl: page.url()
+      });
+      throw new Error(`Failed to extract case details: ${error.message}`);
     }
   }
 
@@ -253,8 +265,31 @@ class EservicesScrapper {
         return scrapperResponseMapper.mapEservicesResponse(rawCaseDetails);
 
       } catch (error) {
-        logger.error("Error processing CNR:", error);
-        throw Error(`Error processing CNR ${cnrNumber}: ${error}`);
+        logger.error('Error processing CNR number', {
+          error: error.message,
+          stack: error.stack,
+          cnrNumber,
+          attempt: attempt + 1,
+          maxRetries: this.maxRetries
+        });
+
+        if (browser) {
+          await browser.close().catch(closeError => {
+            logger.error('Error closing browser', {
+              error: closeError.message,
+              stack: closeError.stack
+            });
+          });
+        }
+
+        attempt++;
+        if (attempt >= this.maxRetries) {
+          throw new Error(`Failed to process CNR ${cnrNumber} after ${this.maxRetries} attempts: ${error.message}`);
+        }
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        continue;
       }
     }
   }
