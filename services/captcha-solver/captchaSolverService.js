@@ -28,7 +28,7 @@ class CaptchaSolverService {
 
             await sharp(imageBuffer).toFile(outputPath);
         } catch (error) {
-            logger.error('Error during preprocessing:', error);
+            logger.error('Error during preprocessing: ' + error);
             throw error;
         }
     }
@@ -44,7 +44,7 @@ class CaptchaSolverService {
 
             const cleaned = text.replace(/[^a-zA-Z0-9]/g, '').trim();
             console.log(cleaned)
-            logger.info('Cleaned OCR Text:', cleaned);
+            logger.info('Cleaned OCR Text: ' + cleaned);
 
             return cleaned;
         } catch (error) {
