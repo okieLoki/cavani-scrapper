@@ -124,7 +124,7 @@ class EservicesScrapper {
       });
     } catch (error) {
       logger.error("Error extracting case details:", error);
-      throw Error("Error extracting case details");
+      throw Error("Error extracting case details: " + error);
     }
   }
 
@@ -214,7 +214,7 @@ class EservicesScrapper {
 
           if (hasInvalidCaptchaError) {
             logger.info('Invalid captcha detected in error modal. Retrying...');
-            throw new Error('Invalid captcha error');
+            throw new Error('Invalid captcha error: ' + hasInvalidCaptchaError);
           }
 
           const isTableVisible = await page.evaluate(() => {
@@ -226,7 +226,7 @@ class EservicesScrapper {
             logger.info(
               "Table not found after captcha submission - likely invalid captcha. Retrying..."
             );
-            throw new Error("Invalid captcha or submission error");
+            throw new Error("Invalid captcha or submission error: " + isTableVisible);
           }
 
           await page.waitForSelector("#history_cnr", { timeout: 30000 });
@@ -249,7 +249,7 @@ class EservicesScrapper {
 
         } catch (error) {
           logger.error("Error processing CNR:", error);
-          throw Error(`Error processing CNR ${cnrNumber}`);
+          throw Error(`Error processing CNR ${cnrNumber}: ${error}`);
         }
       } catch (error) {
         if (browser) {
