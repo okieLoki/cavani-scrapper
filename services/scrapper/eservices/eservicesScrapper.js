@@ -1,10 +1,10 @@
 import puppeteer from "puppeteer";
 import path from "path";
 import logger from "../../../util/logger/logger.js";
-import captchaSolverService from "../../captcha-solver/captchaSolverService.js";
 import fs from "fs-extra";
 import os from "os";
 import scrapperResponseMapper from "../mappers/scrapperResponseMapper.js";
+import axios from "axios";
 
 class EservicesScrapper {
   constructor() {
@@ -165,108 +165,96 @@ class EservicesScrapper {
           `Attempt ${attempt + 1} of ${this.maxRetries} for CNR: ${cnrNumber}`
         );
 
-        try {
-          await page.goto(this.baseUrl, { waitUntil: "networkidle2" });
-          await page.waitForSelector("#captcha_image");
+        await page.goto(this.baseUrl, { waitUntil: "networkidle2" });
+        await page.waitForSelector("#captcha_image");
 
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-
-          const imageName =
-            Math.random().toString(36).substring(2, 15) +
-            "_" +
-            Date.now() +
-            ".png";
-
-          const captchaElement = await page.$("#captcha_image");
-          const rawImagePath = path.join(
-            this.imagesDir,
-            `captcha_raw_${imageName}.png`
-          );
-          const processedImagePath = path.join(
-            this.imagesDir,
-            `captcha_processed_${imageName}.png`
-          );
-
-          await captchaElement.screenshot({ path: rawImagePath });
-          await captchaSolverService.preprocessCaptcha(
-            rawImagePath,
-            processedImagePath
-          );
-          const captchaText = await captchaSolverService.solveCaptcha(
-            processedImagePath
-          );
-
-          console.log(captchaText);
-
-          await fs.remove(rawImagePath);
-          await fs.remove(processedImagePath);
-
-          await page.type("#cino", cnrNumber);
-          await page.type("#fcaptcha_code", captchaText);
-          await page.click("#searchbtn");
-
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-
-          const hasInvalidCaptchaError = await page.evaluate(() => {
-            const errorElement = document.querySelector('.alert-danger-cust');
-            return errorElement && errorElement.textContent.trim().includes('Invalid Captcha');
-          });
-
-          if (hasInvalidCaptchaError) {
-            logger.info('Invalid captcha detected in error modal. Retrying...');
-            throw new Error('Invalid captcha error: ' + hasInvalidCaptchaError);
-          }
-
-          const isTableVisible = await page.evaluate(() => {
-            const table = document.querySelector("#history_cnr");
-            return table && table.offsetParent !== null;
-          });
-
-          if (!isTableVisible) {
-            logger.info(
-              "Table not found after captcha submission - likely invalid captcha. Retrying..."
-            );
-            throw new Error("Invalid captcha or submission error: " + isTableVisible);
-          }
-
-          await page.waitForSelector("#history_cnr", { timeout: 30000 });
-          await page.waitForFunction(
-            () => {
-              const container = document.querySelector("#history_cnr");
-              return container && container.textContent.length > 0;
-            },
-            { timeout: 30000 }
-          );
-
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-
-          const rawCaseDetails = await this.extractCaseDetails(page);
-          await browser.close();
-          await this.cleanupImages();
-          
-          // Map the response to standard format
-          return scrapperResponseMapper.mapEservicesResponse(rawCaseDetails);
-
-        } catch (error) {
-          logger.error("Error processing CNR:", error);
-          throw Error(`Error processing CNR ${cnrNumber}: ${error}`);
-        }
-      } catch (error) {
-        if (browser) {
-          try {
-            await browser.close();
-          } catch (closeError) {
-            logger.error("Error closing browser:", closeError);
-          }
-        }
-        await this.cleanupImages();
-
-        if (attempt === this.maxRetries - 1) {
-          return scrapperResponseMapper.getErrorResponse('eServices', 'Failed to fetch case data after max retries');
-        }
-
-        attempt++;
         await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        const imageName =
+          Math.random().toString(36).substring(2, 15) +
+          "_" +
+          Date.now() +
+          ".png";
+
+        const captchaElement = await page.$("#captcha_image");
+        const captchaBuffer = await captchaElement.screenshot();
+        const captchaBase64 = captchaBuffer.toString('base64');
+
+        // Solve via Mistral
+        const mistralResponse = await axios.post(
+          "https://api.mistral.ai/v1/chat/completions",
+          {
+            model: "pixtral-12b-2409",
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: "The image is a text captcha. Read and provide only the text characters shown in the image. Do not include any explanations or additional text in your response." },
+                  { type: "image_url", image_url: { url: `data:image/png;base64,${captchaBase64}` } }
+                ]
+              }
+            ]
+          },
+          {
+            headers: {
+              Authorization: "Bearer jj2eLyfF5JEZjrKzlk3ecj7By5CyY94i",
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        const captchaText = mistralResponse.data.choices?.[0]?.message?.content?.trim();
+        logger.info(`[🤖] Mistral Solved CAPTCHA: ${captchaText}`);
+
+        await page.type("#cino", cnrNumber);
+        await page.type("#fcaptcha_code", captchaText);
+        await page.click("#searchbtn");
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        const hasInvalidCaptchaError = await page.evaluate(() => {
+          const errorElement = document.querySelector('.alert-danger-cust');
+          return errorElement && errorElement.textContent.trim().includes('Invalid Captcha');
+        });
+
+        if (hasInvalidCaptchaError) {
+          logger.info('Invalid captcha detected in error modal. Retrying...');
+          throw new Error('Invalid captcha error: ' + hasInvalidCaptchaError);
+        }
+
+        const isTableVisible = await page.evaluate(() => {
+          const table = document.querySelector("#history_cnr");
+          return table && table.offsetParent !== null;
+        });
+
+        if (!isTableVisible) {
+          logger.info(
+            "Table not found after captcha submission - likely invalid captcha. Retrying..."
+          );
+          throw new Error("Invalid captcha or submission error: " + isTableVisible);
+        }
+
+        await page.waitForSelector("#history_cnr", { timeout: 30000 });
+        await page.waitForFunction(
+          () => {
+            const container = document.querySelector("#history_cnr");
+            return container && container.textContent.length > 0;
+          },
+          { timeout: 30000 }
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        const rawCaseDetails = await this.extractCaseDetails(page);
+        await browser.close();
+        await this.cleanupImages();
+        
+        // Map the response to standard format
+        return scrapperResponseMapper.mapEservicesResponse(rawCaseDetails);
+
+      } catch (error) {
+        logger.error("Error processing CNR:", error);
+        throw Error(`Error processing CNR ${cnrNumber}: ${error}`);
       }
     }
   }
